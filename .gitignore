@@ -84,5 +84,5 @@ target/
 *.pyc
 __pycache__/
 
-.py_modules
+py_modules/
 db.sqlite3
