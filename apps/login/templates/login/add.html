@@ -9,6 +9,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     {% comment %} <script src="https://cdn.jsdelivr.net/npm/cbor-js-unofficial@0.1.0-a4/cbor.min.js"></script> {% endcomment %}
     <script src={% static "cbor.js" %}></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+    <script
+        src="https://code.jquery.com/jquery-3.3.1.min.js"
+        integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+        crossorigin="anonymous"
+    ></script>
 </head>
 <body>
     <div>
@@ -16,9 +22,13 @@
         <p>asdasdga</p>
         <p>Plug your key in immediately</p>
         <script>
+            var csrftoken = Cookies.get('csrftoken');
             fetch('/register/begin', {
             method: 'POST',
-            headers: {'Content-Type': 'application/cbor'}
+            headers: {
+                'Content-Type': 'application/cbor',
+                'X-CSRFToken': csrftoken
+            }
             }).then(function(response) {
             if(response.ok) return response.arrayBuffer();
                 throw new Error('Error getting registration data!');
@@ -44,6 +54,33 @@
             alert(reason);
             }).then(function() {
             window.location = '/dashboard';
+            });
+        </script>
+
+
+        <script>
+
+            $(document).ajaxSend(function(event, xhr, settings) {
+
+            function sameOrigin(url) {
+                var host = document.location.host,
+                    protocol = document.location.protocol,
+                    sr_origin = '//' + host,
+                    origin = protocol + sr_origin;
+
+                return (url == origin || url.slice(0, origin.length + 1) == origin + '/') ||
+                    (url == sr_origin || url.slice(0, sr_origin.length + 1) == sr_origin + '/') ||
+                    !(/^(\/\/|http:|https:).*/.test(url));
+            }
+
+            function safeMethod(method) {
+                return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+            }
+            
+            if (!safeMethod(settings.type) && sameOrigin(settings.url)) {
+                xhr.setRequestHeader("X-CSRFToken", csrf_token);
+            }
+
             });
         </script>
     </div>
