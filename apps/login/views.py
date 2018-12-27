@@ -1,6 +1,21 @@
+from __future__ import print_function, absolute_import, unicode_literals
 import json
 from django.shortcuts import render, redirect
-from .models import User
+from .models import User, Key
+from fido2.client import ClientData
+from fido2.server import U2FFido2Server, RelyingParty
+from fido2.ctap2 import AttestationObject, AuthenticatorData
+from fido2.ctap1 import RegistrationData
+from fido2.utils import sha256, websafe_encode
+from fido2 import cbor
+from django.http.response import JsonResponse
+
+
+rp = RelyingParty('localhost', 'Demo FIDO2 server')
+server = U2FFido2Server('https://localhost:8000', rp)
+
+
+
 
 def index(request):
 	return render(request, 'login/index.html')
@@ -22,8 +37,34 @@ def login_user(request):
 		return redirect('dashboard')
 
 def register_key(request):
-	return render(request, 'login/addkey.html')
+	return render(request, 'login/add.html')
 
-def second_factor_auth(request):
-	return True
 
+#Key views
+def begin_registration(request):
+	login_creds = request.session['logged_in']
+	# print(login_creds('id'), login_creds('email'))
+	register_data, state = server.register_begin({
+		'id': 'some person', 
+		'name': '2@2.com'
+	})
+	request.session['state'] = state
+
+	return cbor.dumps(register_data)
+
+def complete_registration(request):
+	data = cbor.loads(request.POST())
+	print(data)
+	client_data = ClientData(data['clientDataJSON'])
+	att_obj = AttestationObject(data['attestationObject'])
+	auth_data = server.register_complete(
+        request.session['state'],
+        client_data,
+        att_obj
+    )
+
+	Key.objects.validate_key_creation(request.POST) #Write to db
+	return auth_data
+	# query = User.objects.
+	#Write to db
+	#auth_data.credential_data

@@ -26,7 +26,17 @@ class ManageModels(models.Manager):
 		)
 		return True
 
-	def validate_key_creation(self):
+	def validate_key_creation(self, request):
+		login_credentials = request.session['logged_in'].id
+		User.objects.filter(id=login_credentials).update(
+			two_factor_authenticated = True
+		)
+
+		self.create(
+			user = login_credentials,
+			credential_data_key = request.get('auth_data.credential_data')
+
+		)
 		return True
 
 	def validate_key_login(self):

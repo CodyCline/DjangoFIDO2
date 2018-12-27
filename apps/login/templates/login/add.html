@@ -1,18 +1,51 @@
+{% load static %}
 <!DOCTYPE html>
+
 <html>
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Page Title</title>
+    <title>Add key</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" media="screen" href="main.css" />
-    <script src="main.js"></script>
+    {% comment %} <script src="https://cdn.jsdelivr.net/npm/cbor-js-unofficial@0.1.0-a4/cbor.min.js"></script> {% endcomment %}
+    <script src={% static "cbor.js" %}></script>
 </head>
 <body>
     <div>
         <h1>Add keys</h1>
+        <p>asdasdga</p>
         <p>Plug your key in immediately</p>
-        
+        <script>
+            fetch('/register/begin', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/cbor'}
+            }).then(function(response) {
+            if(response.ok) return response.arrayBuffer();
+                throw new Error('Error getting registration data!');
+            }).then(CBOR.decode).
+            
+            then(function(options) {
+            return navigator.credentials.create(options);
+            }).then(function(attestation) {
+            return fetch('/register/complete', data = {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/cbor'},
+                    body: CBOR.encode({
+                    "attestationObject": new Uint8Array(attestation.response.attestationObject),
+                    "clientDataJSON": new Uint8Array(attestation.response.clientDataJSON),
+                })
+                
+            });
+            //console.log(data)
+            }).then(function(response) {
+            var stat = response.ok ? 'successful' : 'unsuccessful';
+            alert('Registration ' + stat + ' More details in server log...');
+            }, function(reason) {
+            alert(reason);
+            }).then(function() {
+            window.location = '/dashboard';
+            });
+        </script>
     </div>
 </body>
 </html>
