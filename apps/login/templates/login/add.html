@@ -21,44 +21,45 @@
         <h1>Add keys</h1>
         <p>asdasdga</p>
         <p>Plug your key in immediately</p>
-        <script>
-            var csrftoken = Cookies.get('csrftoken');
-            fetch('/register/begin', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/cbor',
-                'X-CSRFToken': csrftoken
-            }
-            }).then(function(response) {
-            if(response.ok) return response.arrayBuffer();
-                throw new Error('Error getting registration data!');
-            }).then(CBOR.decode).
-            
-            then(function(options) {
-            return navigator.credentials.create(options);
-            }).then(function(attestation) {
-            return fetch('/register/complete', data = {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/cbor'},
-                    body: CBOR.encode({
-                    "attestationObject": new Uint8Array(attestation.response.attestationObject),
-                    "clientDataJSON": new Uint8Array(attestation.response.clientDataJSON),
-                })
-                
-            });
-            //console.log(data)
-            }).then(function(response) {
-            var stat = response.ok ? 'successful' : 'unsuccessful';
-            alert('Registration ' + stat + ' More details in server log...');
-            }, function(reason) {
-            alert(reason);
-            }).then(function() {
-            window.location = '/dashboard';
-            });
-        </script>
+
+		<script>
+			var csrftoken = Cookies.get('csrftoken');
+			fetch('/register/begin', {
+				method: 'POST',
+				headers: {
+					'X-CSRFToken': csrftoken
+				}
+			}).then(function(response) {
+				console.log(response.body)
+				if(response.ok) return response.arrayBuffer();
+      			throw new Error('Error getting registration data!');
+			}).then(CBOR.decode).then(function(options) {
+				return navigator.credentials.create(options);
+			}).then(function(attestation) {
+				return fetch('/register/complete', {
+					method: 'POST',
+					headers: {'Content-Type': 'application/cbor', 'X-CSRFToken': csrftoken},
+					body: CBOR.encode({
+						"attestationObject": new Uint8Array(attestation.response.attestationObject),
+						"clientDataJSON": new Uint8Array(attestation.response.clientDataJSON),
+					})
+				});
+			}).then(function(response) {
+				var stat = response.ok ? 'successful' : 'unsuccessful';
+				alert('Registration ' + stat + ' More details in server log...');
+			}, function(reason) {
+				alert(reason);
+			});
+			//}).then(function() {
+			//window.location = '/';
+			//});
+		</script>
 
 
-        <script>
+        
+
+
+        {% comment %} <script>
 
             $(document).ajaxSend(function(event, xhr, settings) {
 
@@ -82,7 +83,7 @@
             }
 
             });
-        </script>
+        </script> {% endcomment %}
     </div>
 </body>
 </html>

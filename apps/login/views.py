@@ -44,41 +44,48 @@ def register_key(request):
 def begin_registration(request):
 	# login_creds = request.session['logged_in']
 	# print(login_creds('id'), login_creds('email'))
-	
+	# if request.method == 'GET':
+
 	registration_data, state = server.register_begin({
-		'id': b'user_id',
+		'id': 'user_id',
 		'name': 'a_user',
 		'displayName': 'A. User',
 		'icon': 'https://example.com/image.png'
 	}, credentials)
 
-	# session['state'] = state
-	print(registration_data)
-	print('\n\n\n\n')
+	request.session['state'] = state
+	#print(registration_data) #This works
 	# cbor.loads(registration_data)
-	try: 
-		return cbor.dumps(registration_data)
-	except AttributeError:
-		return cbor.dumps(registration_data)
+	print("successfully started")
+	
+	
+	return HttpResponse(cbor.dumps(registration_data))
+	# else:
+		# return HttpResponse("Not Posting")
 		
 	
 
 def complete_registration(request):
-	data = cbor.loads(request.POST())
-	print(data)
-	client_data = ClientData(data['clientDataJSON'])
-	att_obj = AttestationObject(data['attestationObject'])
-	auth_data = server.register_complete(
-		request.session['state'],
-		client_data,
-		att_obj
-	)
+	print('started completion')
+	data = request.POST
+	# data = cbor.loads(request.GET('attestationObject'))
 
-	Key.objects.validate_key_creation(request.POST) #Write to db
-	cbor.dumps({'status': 'OK'})
-	# query = User.objects.
+	print('made it here', data)
+	# client_data = ClientData(data['clientDataJSON'])
+	# att_obj = AttestationObject(data['attestationObject'])
+	# auth_data = server.register_complete(
+	# 	request.session['state'],
+	# 	client_data,
+	# 	att_obj
+	# )
+
+
+	# credentials.append(auth_data.credential_data)
+	#Key.objects.validate_key_creation(request.POST) #Write to db
 	#Write to db
-	#auth_data.credential_data
+	return HttpResponse('T')
+	return HttpResponse(cbor.dumps({'status': 'OK'}))
+
 def test(request):
 	message = "Test"
 	return HttpResponse(message)
