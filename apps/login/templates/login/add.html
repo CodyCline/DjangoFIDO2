@@ -8,13 +8,9 @@
     <title>Add key</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     {% comment %} <script src="https://cdn.jsdelivr.net/npm/cbor-js-unofficial@0.1.0-a4/cbor.min.js"></script> {% endcomment %}
-    <script src={% static "cbor.js" %}></script>
+    <script src={% static 'cbor.js' %} ></script>
     <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
-    <script
-        src="https://code.jquery.com/jquery-3.3.1.min.js"
-        integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
-        crossorigin="anonymous"
-    ></script>
+    
 </head>
 <body>
     <div>
@@ -30,15 +26,63 @@
 					'X-CSRFToken': csrftoken
 				}
 			}).then(function(response) {
-				console.log(response.body)
-				if(response.ok) return response.arrayBuffer();
-      			throw new Error('Error getting registration data!');
+				// if(response.ok) {
+				// 	return response.arrayBuffer();
+				// }
+				  // throw new Error('Error getting registration data!');
+				// var proxy =  new Uint32Array(response.arrayBuffer());
+				// return response.arrayBuffer();
+				return response.arrayBuffer();
+				
 			}).then(CBOR.decode).then(function(options) {
+				console.log(options, 'response.arraybuff is fine to me')
+				//This line below is not working
 				return navigator.credentials.create(options);
 			}).then(function(attestation) {
+				console.log("Start fetch")
 				return fetch('/register/complete', {
 					method: 'POST',
-					headers: {'Content-Type': 'application/cbor', 'X-CSRFToken': csrftoken},
+					headers: {
+						'Content-Type': 'application/cbor', 
+						'X-CSRFToken': csrftoken
+					},
+					body: CBOR.encode({
+						"attestationObject": new Uint8Array(attestation.response.attestationObject),
+						"clientDataJSON": new Uint8Array(attestation.response.clientDataJSON),
+					})
+				});
+			}).then(function(response) {
+				var stat = response.ok ? 'successful' : 'unsuccessful';
+				alert('Registration ' + stat + ' More details in server log...');
+			}, //function(reason) {
+				//alert(reason);
+			);
+			//}).then(function() {
+			//window.location = '/';
+			//});
+		</script>
+
+		<!-- <script> 
+			var csrftoken = Cookies.get('csrftoken')
+			fetch('/register/begin', {
+				method: 'POST',
+				// headers: {
+				// 	'X-CSRFToken': csrftoken
+				// }
+			}).then(function(response) {
+				data = console.log('Response is ...', response)
+				if(response.ok) return data, response.arrayBuffer();
+			
+				throw new Error('Error getting registration data!');
+			}).then(CBOR.decode).then(function(options) {
+				data2 = console.log('Ok options is..', options)
+				return data2, navigator.credentials.create(options);
+
+			}).then(function(attestation) {
+				console.log("Ok created the credentials now fetching it")
+				return fetch('/register/complete', {
+					method: 'POST',
+					headers: {'Content-Type': 'application/cbor'},
 					body: CBOR.encode({
 						"attestationObject": new Uint8Array(attestation.response.attestationObject),
 						"clientDataJSON": new Uint8Array(attestation.response.clientDataJSON),
@@ -50,40 +94,8 @@
 			}, function(reason) {
 				alert(reason);
 			});
-			//}).then(function() {
-			//window.location = '/';
-			//});
 		</script>
-
-
-        
-
-
-        {% comment %} <script>
-
-            $(document).ajaxSend(function(event, xhr, settings) {
-
-            function sameOrigin(url) {
-                var host = document.location.host,
-                    protocol = document.location.protocol,
-                    sr_origin = '//' + host,
-                    origin = protocol + sr_origin;
-
-                return (url == origin || url.slice(0, origin.length + 1) == origin + '/') ||
-                    (url == sr_origin || url.slice(0, sr_origin.length + 1) == sr_origin + '/') ||
-                    !(/^(\/\/|http:|https:).*/.test(url));
-            }
-
-            function safeMethod(method) {
-                return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
-            }
-            
-            if (!safeMethod(settings.type) && sameOrigin(settings.url)) {
-                xhr.setRequestHeader("X-CSRFToken", csrf_token);
-            }
-
-            });
-        </script> {% endcomment %}
+		-->
     </div>
 </body>
 </html>
