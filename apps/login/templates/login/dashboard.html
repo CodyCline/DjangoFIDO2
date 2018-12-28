@@ -36,12 +36,16 @@
                 </tr>
             </thead>
             <tbody>
+                {% comment %} {% for key in all_keys.all %} {% endcomment %}
                 <tr>
-                    <td>John's Key</td>
-                    <td>Datetime</td>
-                    <td>Datetime</td>
-                    <td>Delete</td>
+                    {% for key in all_keys.all %}
+                        <td>{{ key.key_name }}</td>
+                        <td>{{ key.credential_data_key }}</td>
+                        <td>Datetime</td>
+                        <td>Delete</td>
+                    {% endfor %}
                 </tr>
+                {% comment %} {% endfor %} {% endcomment %}
             </tbody>
         </table>
         

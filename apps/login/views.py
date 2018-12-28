@@ -21,7 +21,13 @@ def index(request):
 	return render(request, 'login/index.html')
 
 def dashboard(request):
-	return render(request, 'login/dashboard.html')
+	id_credential = request.session['login_user_id']
+	user_id = User.objects.get(id=id_credential)
+	context = {
+		'all_keys': Key.objects.get(user=user_id)
+		# 'all_keys': Key.objects.all()
+	}
+	return render(request, 'login/dashboard.html', context)
 
 def register_user(request):
 	attempt = User.objects.validate_user_creation(request.POST)
@@ -34,7 +40,8 @@ def login_user(request):
 	login_attempt = User.objects.validate_login(request.POST)
 	if login_attempt:
 		user = User.objects.get(email=request.POST['email'])
-		request.session['login_credentials'] = {'id': user.id, 'email': user.email}
+		request.session['login_user_id'] = user.id
+		request.session['login_user_email'] = user.email
 		return redirect('dashboard')
 
 def register_key(request):
@@ -43,12 +50,14 @@ def register_key(request):
 
 #Key views
 def begin_registration(request):
-	login_creds = request.session['login_credentials'][0]
-	print(login_creds)
-
+	id_credential = request.session['login_user_id']
+	email_credential = request.session['login_user_email']
+	# print(login_creds, 'The users credentials')
+	# bytes(ofobject)
 	registration_data, state = server.register_begin({
-		'id': bytes(login_creds['email']),
-		'name': 'a_user',
+		'id': bytes(id_credential),
+		'name': email_credential,
+		'displayName': 'users key name'
 	}, credentials)
 
 	request.session['state'] = state
@@ -57,6 +66,7 @@ def begin_registration(request):
 	
 
 def complete_registration(request):
+	id_credential = request.session['login_user_id']
 	data = cbor.loads(request.body)[0]
 	client_data = ClientData(data['clientDataJSON'])
 	att_obj = AttestationObject(data['attestationObject'])
@@ -67,7 +77,8 @@ def complete_registration(request):
 	)
 
 	credentials.append(auth_data.credential_data) #Write this to the db
-	#Key.objects.validate_key_creation(request.POST) #Write to db
+	del request.session['state']
+	Key.objects.validate_key_creation(request, public_key=auth_data.credential_data) #Write to db
 	return HttpResponse(cbor.dumps({'status': 'OK'}))
 
 def test(request):
