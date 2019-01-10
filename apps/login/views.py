@@ -80,7 +80,3 @@ def complete_registration(request):
 	del request.session['state']
 	Key.objects.validate_key_creation(request, public_key=auth_data.credential_data) #Write to db
 	return HttpResponse(cbor.dumps({'status': 'OK'}))
-
-def test(request):
-	message = "Test"
-	return HttpResponse(message)

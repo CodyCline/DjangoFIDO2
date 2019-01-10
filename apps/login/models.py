@@ -1,38 +1,66 @@
 from django.db import models
+from django.contrib.auth.models import AbstractUser
 from datetime import datetime
 
 
 
 class ManageModels(models.Manager):
-	# def __init__(self):
-	#     return True
 	def validate_login(self, post_data):
-		#if len(self.filter(email=post_data.get('email'))) > 0:
-			#given_password = post_data.get('password')
-			#correct_password = User.objects.get(email = post_data.get('email').password #Email associated with the password
-			#if post_data.get('password') == post_data.get('email').password:
-				#print("Password Correct")
-		return True
+		attempt = True
+		errors = []
+		if len(User.objects.filter(email=post_data['email'])) > 0:
+			hashed_pw = User.objects.get(email = post_data['email']).password
+			hashed = hashed.encode('utf-8')
+			password = post_data['password']
+			if bcrypt.hashpw(password, hashed) == hashed_pw:
+				attempt = True
+			else:
+				errors.append("Unsuccessful login.")
+				attempt = False
+		else:
+			errors.append("Unsuccessful login.")
+			attempt = False
+		return [attempt, errors]
 
 	
 	def validate_user_creation(self, post_data):
-		self.create (
-			username=post_data.get('username'),
-			email=post_data.get('email'),
-			password=post_data.get('password'),
-			two_factor_authenticated=False,
-			created_at=datetime.now(),
-			updated_at=datetime.now()
-		)
-		return True
+		passFlag = True
+		errors = []
+		#VALIDATE FORMAT
+		if len(post_data['name']) < 3:
+			errors.append('Name must be at least 3 characters.')
+			passFlag = False            
+		if not re.match(NAME_REGEX, post_data['name']):
+			errors.append('Name fields must be letter characters only.')
+			passFlag= False
+		if not re.match(EMAIL_REGEX, post_data['email']):
+			errors.append("Invalid email format.")
+			passFlag = False
+		if len(post_data['password']) < 8:
+			errors.append('Password must contain at least 8 characters.')
+			passFlag = False
+		if post_data['password'] != post_data['confirm_password']:
+			errors.append('Passwords do not match.')
+			passFlag = False
+		if len(self.filter(email=post_data['email'])) > 0:
+			errors.append("Registration is invalid.")
+			passFlag = False
 
+		if passFlag == True:
+			hashed_pw = bcrypt.hashpw(post_data['password'].encode(), bcrypt.gensalt())
+			self.create(
+				username = post_data['username'], 
+				email = post_data['email'], 
+				password = hashed
+			)
+		return [passFlag, errors]
+
+	
+	
+	
 	def validate_key_creation(self, request, public_key):
 		login_credentials = request.session['login_user_id']
 		the_user = User.objects.get(id=login_credentials)
-		# User.objects.filter(id=the_user).update(
-		# 		two_factor_authenticated = True
-		# 	)
-
 		self.create(
 			user = the_user,
 			credential_data_key = public_key
