@@ -1,7 +1,7 @@
 from __future__ import print_function, absolute_import, unicode_literals
 import json
 from django.shortcuts import render, redirect
-from .models import User, Key
+# from .models import User, Key
 from fido2.client import ClientData
 from fido2.server import U2FFido2Server, RelyingParty
 from fido2.ctap2 import AttestationObject, AuthenticatorData
@@ -29,20 +29,6 @@ def dashboard(request):
 	}
 	return render(request, 'login/dashboard.html', context)
 
-def register_user(request):
-	attempt = User.objects.validate_user_creation(request.POST)
-	if attempt:
-		return redirect('index')
-	else:
-		return redirect('index')
-
-def login_user(request):
-	login_attempt = User.objects.validate_login(request.POST)
-	if login_attempt:
-		user = User.objects.get(email=request.POST['email'])
-		request.session['login_user_id'] = user.id
-		request.session['login_user_email'] = user.email
-		return redirect('dashboard')
 
 def register_key(request):
 	return render(request, 'login/add.html')
