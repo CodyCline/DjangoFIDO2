@@ -8,8 +8,18 @@ class CustomUserCreationForm(UserCreationForm):
         model = CustomUser
         fields = ('username', 'email')
 
+#For changing things like username, password reset.
 class CustomUserChangeForm(UserChangeForm):
-
     class Meta:
         model = CustomUser
         fields = ('username', 'email')
+
+# class AuthenticatorCreationForm(forms.ModelForm):
+    # class Meta:
+        # model = Authenticator
+        # fields = ('key_hash', 'last_used')
+
+# class AuthenticatorChangeForm(forms.ModelForm):
+    # class Meta:
+        # model = Authenticator
+        # fields = ('key_hash', 'last_used', 'name')
