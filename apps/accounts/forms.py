@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from .models import CustomUser
+from .models import CustomUser, Authenticator
 
 class CustomUserCreationForm(UserCreationForm):
 
@@ -14,12 +14,12 @@ class CustomUserChangeForm(UserChangeForm):
         model = CustomUser
         fields = ('username', 'email')
 
-# class AuthenticatorCreationForm(forms.ModelForm):
-    # class Meta:
-        # model = Authenticator
-        # fields = ('key_hash', 'last_used')
+class AuthenticatorCreationForm(forms.ModelForm):
+    class Meta:
+        model = Authenticator
+        fields = ('key_hash', )
 
-# class AuthenticatorChangeForm(forms.ModelForm):
-    # class Meta:
-        # model = Authenticator
-        # fields = ('key_hash', 'last_used', 'name')
+class AuthenticatorChangeForm(forms.ModelForm):
+    class Meta:
+        model = Authenticator
+        fields = ('key_hash', 'name')

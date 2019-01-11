@@ -1,0 +1,100 @@
+{% load static %}
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Add key</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {% comment %} <script src="https://cdn.jsdelivr.net/npm/cbor-js-unofficial@0.1.0-a4/cbor.min.js"></script> {% endcomment %}
+    <script src={% static 'cbor.js' %} ></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+    
+</head>
+<body>
+    <div>
+        <h1>Add keys</h1>
+        <p>Plug your key in immediately</p>
+
+		<script>
+			var csrftoken = Cookies.get('csrftoken');
+			fetch("{% url 'begin_registration' %}", {
+				method: 'POST',
+				headers: {
+					'X-CSRFToken': csrftoken
+				}
+			}).then(function(response) {
+				if(response.ok) {
+				    return response.arrayBuffer();
+				}
+				throw new Error('Error getting registration data!');
+				// var proxy =  new Uint32Array(response.arrayBuffer());
+				// return response.arrayBuffer();
+				//return response.arrayBuffer();
+				
+			}).then(CBOR.decode).then(function(options) {
+				//console.log(options, 'response.arraybuff is fine to me')
+				//This line below is not working
+				return navigator.credentials.create(options);
+			}).then(function(attestation) {
+				//console.log("Start fetch")
+				return fetch("{% url 'complete_registration' %}", {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/cbor', 
+						'X-CSRFToken': csrftoken
+					},
+					body: CBOR.encode({
+						"attestationObject": new Uint8Array(attestation.response.attestationObject),
+						"clientDataJSON": new Uint8Array(attestation.response.clientDataJSON),
+					})
+				});
+			}).then(function(response) {
+				var stat = response.ok ? 'successful' : 'unsuccessful';
+				alert('Registration ' + stat + ' More details in server log...');
+			},function(reason) {
+			    alert(reason);
+			//);
+			}).then(function() {
+			    window.location = '/';
+			});
+		</script>
+
+		<!-- <script> 
+			var csrftoken = Cookies.get('csrftoken')
+			fetch('/register/begin', {
+				method: 'POST',
+				// headers: {
+				// 	'X-CSRFToken': csrftoken
+				// }
+			}).then(function(response) {
+				data = console.log('Response is ...', response)
+				if(response.ok) return data, response.arrayBuffer();
+			
+				throw new Error('Error getting registration data!');
+			}).then(CBOR.decode).then(function(options) {
+				data2 = console.log('Ok options is..', options)
+				return data2, navigator.credentials.create(options);
+
+			}).then(function(attestation) {
+				console.log("Ok created the credentials now fetching it")
+				return fetch('/register/complete', {
+					method: 'POST',
+					headers: {'Content-Type': 'application/cbor'},
+					body: CBOR.encode({
+						"attestationObject": new Uint8Array(attestation.response.attestationObject),
+						"clientDataJSON": new Uint8Array(attestation.response.clientDataJSON),
+					})
+				});
+			}).then(function(response) {
+				var stat = response.ok ? 'successful' : 'unsuccessful';
+				alert('Registration ' + stat + ' More details in server log...');
+			}, function(reason) {
+				alert(reason);
+			});
+		</script>
+		-->
+    </div>
+</body>
+</html>

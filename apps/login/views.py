@@ -12,7 +12,7 @@ from django.http.response import JsonResponse, HttpResponse
 
 
 rp = RelyingParty('localhost', 'Demo FIDO2 server')
-server = U2FFido2Server('http://localhost:8000', rp)
+server = U2FFido2Server('https://localhost:8000', rp)
 
 credentials = []
 
