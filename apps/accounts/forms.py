@@ -17,7 +17,7 @@ class CustomUserChangeForm(UserChangeForm):
 class AuthenticatorCreationForm(forms.ModelForm):
     class Meta:
         model = Authenticator
-        fields = ('key_hash', )
+        fields = ('name','key_hash')
 
 class AuthenticatorChangeForm(forms.ModelForm):
     class Meta:
