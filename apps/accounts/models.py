@@ -1,30 +1,40 @@
 import datetime
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
 from django.conf import settings
-
+from fido2 import cbor
 
 class ModelManager(models.Manager): 
 	#This may end up being a queryset
-	def validate_key_creation(self, auth_data, login_id):
+	def create_authenticator(self, login_id):
 		user_id = CustomUser.objects.get(id=login_id)
-		self.create(
+		new_authenticator = self.create(
 			user = user_id,
 			name="Newly Registered Device",
-			key_hash = auth_data,
 			created_at=datetime.date,
 			last_used=datetime.date
 		)
-		return True
+		new_authenticator.save()
+		return new_authenticator.id
+	
+	def add_auth_data(self, key_id, auth_data):
+		authenticator_id = Authenticator.objects.get(id = key_id)
+		self.create(
+			authenticator=authenticator_id,
+			aaguid = auth_data.aaguid,
+			credential_id = auth_data.credential_id,
+			public_key = cbor.dump_dict(auth_data.public_key)
+		)
+
 	def get_credential_id(self, login_id):
 		user_id = CustomUser.objects.get(id=login_id)
-		return Authenticator.objects.only('key_hash').get(user=user_id).key_hash
+		return 'j'
 
 
 class CustomUser(AbstractUser):
 	# Extends built-in user
 	phone_num = models.CharField(max_length=12)
-	objects = ModelManager()
+	objects = UserManager()
 
 #Contains meta-data on a registered device
 class Authenticator(models.Model):
@@ -32,12 +42,14 @@ class Authenticator(models.Model):
 	name = models.CharField(max_length=50)
 	last_used = models.DateTimeField(auto_now_add=True)
 	created_at = models.DateTimeField(auto_now_add=True)
+	objects = ModelManager()
 
 class AttestedCredentialData(models.Model):
-	authenticator = models.ForeignKey(
+	authenticator = models.OneToOneField(
 		Authenticator,
-		on_delete=models.CASCADE,
+		on_delete=models.CASCADE
 	)
 	aaguid = models.BinaryField()
-	_credential_id = models.BinaryField(db_column='credential_id')
-	_public_key = models.BinaryField(db_column='public_key')
+	credential_id = models.BinaryField()
+	public_key = models.BinaryField()
+	objects = ModelManager()

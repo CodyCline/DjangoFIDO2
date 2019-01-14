@@ -1,19 +1,17 @@
-import json, ast
 from django.shortcuts import render, redirect, HttpResponse
 from django.views.decorators.http import require_http_methods
 from django.http import Http404
-from .forms import CustomUserCreationForm, AuthenticatorCreationForm
-from .models import Authenticator
+from .models import Authenticator, AttestedCredentialData
+from .forms import CustomUserCreationForm
 from fido2.client import ClientData
 from fido2.server import U2FFido2Server, RelyingParty
 from fido2.ctap2 import AttestationObject, AuthenticatorData
 from fido2.ctap1 import RegistrationData
 from fido2.utils import sha256, websafe_encode
 from fido2 import cbor
-from ast import literal_eval
 
 rp = RelyingParty('localhost', 'Demo FIDO2 server')
-server = U2FFido2Server('https://localhost:8080', rp)
+server = U2FFido2Server('https://localhost:9000', rp)
 
 credentials = [] #For now store the credentials in memory
 
@@ -26,16 +24,14 @@ def user_create(request, template_name='accounts/signup.html'):
 	return render(request, template_name, {'form':form})
 
 
-#These four views are fetched from the front end for registering verifying authentication
+#These four views are for registering and verifying authenticators
 @require_http_methods(['POST'])
 def start_registration(request):
-	user_id = request.user.id
-	user_email = request.user.email
 	#Creates a challenge with user_id and email and returns as CBOR data
 	registration_data, state = server.register_begin({
-		'id': bytes(user_id),
-		'name': user_email,
-		'displayName': 'New Key'
+		'id': bytes(request.user.id),
+		'name': request.user.email,
+		'displayName': request.user.username
 	}, credentials)
 
 	request.session['state'] = state
@@ -52,23 +48,30 @@ def end_registration(request):
 		att_obj
 	)
 
-	#Write the key to the database
-	# Authenticator.objects.validate_key_creation(
-	# 	auth_data=auth_data.credential_data,
-	# 	login_id=request.user.id
-	# )
+	#Write the authenticator (meta data about the key) and the actual cryptographic data to db
+	new_key = Authenticator.objects.create_authenticator(
+		login_id=request.user.id
+	)
 
-	print(type(auth_data), '\n\n\n', auth_data)
+
+	AttestedCredentialData.objects.add_auth_data(
+		key_id=new_key,
+		auth_data = auth_data.credential_data
+	)
+
 
 	credentials.append(auth_data.credential_data) #For now for testing purposes
-
 	del request.session['state'] #Pop the session data
 	return HttpResponse(cbor.dumps({'status': 'OK'}))
 
 @require_http_methods(['POST'])
 def start_authentication(request):
+	
+	credentials = "Credentials that are owned by the user grabbed from db"
 
-	return HttpResponse("OK")
+    auth_data, state = server.authenticate_begin(credentials)
+    session['state'] = state
+    return HttpResponse(cbor.dumps(auth_data))
 
 @require_http_methods(['POST'])
 def finish_key(request):
