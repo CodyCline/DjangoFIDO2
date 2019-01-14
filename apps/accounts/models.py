@@ -16,6 +16,9 @@ class ModelManager(models.Manager):
 			last_used=datetime.date
 		)
 		return True
+	def get_credential_id(self, login_id):
+		user_id = CustomUser.objects.get(id=login_id)
+		return Authenticator.objects.only('key_hash').get(user=user_id).key_hash
 
 
 class CustomUser(AbstractUser):
@@ -23,11 +26,18 @@ class CustomUser(AbstractUser):
 	phone_num = models.CharField(max_length=12)
 	objects = ModelManager()
 
+#Contains meta-data on a registered device
 class Authenticator(models.Model):
 	user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="keys", on_delete=models.CASCADE)
 	name = models.CharField(max_length=50)
-	key_hash = models.CharField(max_length=5000) #Stores the crypto token
 	last_used = models.DateTimeField(auto_now_add=True)
 	created_at = models.DateTimeField(auto_now_add=True)
-	objects = ModelManager()
 
+class AttestedCredentialData(models.Model):
+	authenticator = models.ForeignKey(
+		Authenticator,
+		on_delete=models.CASCADE,
+	)
+	aaguid = models.BinaryField()
+	_credential_id = models.BinaryField(db_column='credential_id')
+	_public_key = models.BinaryField(db_column='public_key')

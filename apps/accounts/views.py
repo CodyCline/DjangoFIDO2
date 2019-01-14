@@ -1,5 +1,7 @@
+import json, ast
 from django.shortcuts import render, redirect, HttpResponse
 from django.views.decorators.http import require_http_methods
+from django.http import Http404
 from .forms import CustomUserCreationForm, AuthenticatorCreationForm
 from .models import Authenticator
 from fido2.client import ClientData
@@ -8,10 +10,10 @@ from fido2.ctap2 import AttestationObject, AuthenticatorData
 from fido2.ctap1 import RegistrationData
 from fido2.utils import sha256, websafe_encode
 from fido2 import cbor
-
+from ast import literal_eval
 
 rp = RelyingParty('localhost', 'Demo FIDO2 server')
-server = U2FFido2Server('https://localhost:8000', rp)
+server = U2FFido2Server('https://localhost:8080', rp)
 
 credentials = [] #For now store the credentials in memory
 
@@ -51,20 +53,41 @@ def end_registration(request):
 	)
 
 	#Write the key to the database
-	Authenticator.objects.validate_key_creation(
-		auth_data=auth_data.credential_data,
-		login_id=request.user.id
-	)
+	# Authenticator.objects.validate_key_creation(
+	# 	auth_data=auth_data.credential_data,
+	# 	login_id=request.user.id
+	# )
+
+	print(type(auth_data), '\n\n\n', auth_data)
+
+	credentials.append(auth_data.credential_data) #For now for testing purposes
+
 	del request.session['state'] #Pop the session data
 	return HttpResponse(cbor.dumps({'status': 'OK'}))
 
 @require_http_methods(['POST'])
 def start_authentication(request):
-	return True
+
+	return HttpResponse("OK")
 
 @require_http_methods(['POST'])
 def finish_key(request):
-	return True
+	
+	data = cbor.loads(request.body)[0]
+	credential_id = data['credentialId']
+	client_data = ClientData(data['clientDataJSON'])
+	auth_data = AuthenticatorData(data['authenticatorData'])
+	signature = data['signature']
+
+	server.authenticate_complete(
+		request.session.pop('state'),
+		credentials,
+		credential_id,
+		client_data,
+		auth_data,
+		signature
+	)
+	return HttpResponse(cbor.dumps({'status': 'OK'}))
 
 #Views for editing or deleting keys. These will likely be ajax endpoints
 def edit_authenticator(request):
