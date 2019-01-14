@@ -26,9 +26,17 @@ class ModelManager(models.Manager):
 			public_key = cbor.dump_dict(auth_data.public_key)
 		)
 
-	def get_credential_id(self, login_id):
+	def get_credentials(self, login_id):
+		query_list = []
 		user_id = CustomUser.objects.get(id=login_id)
-		return 'j'
+		auth_query = Authenticator.objects.filter(user=user_id).all()
+
+		#Grab each AttestedCredentialData that belongs to an Authenticator
+		# whose id's match the logged in user's id
+		for i in auth_query:
+			query_list.append(AttestedCredentialData.objects.get(authenticator=i))
+		print(query_list)
+		return query_list
 
 
 class CustomUser(AbstractUser):

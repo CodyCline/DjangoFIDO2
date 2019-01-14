@@ -65,17 +65,17 @@ def end_registration(request):
 	return HttpResponse(cbor.dumps({'status': 'OK'}))
 
 @require_http_methods(['POST'])
-def start_authentication(request):
-	
-	credentials = "Credentials that are owned by the user grabbed from db"
+def start_authentication(request):	
+	credentials = Authenticator.objects.get_credentials(login_id=request.user.id)
 
-    auth_data, state = server.authenticate_begin(credentials)
-    session['state'] = state
-    return HttpResponse(cbor.dumps(auth_data))
+	print('\n The credentials are \n\n\n',credentials)
+
+	auth_data, state = server.authenticate_begin(credentials)
+	request.session['state'] = state
+	return HttpResponse(cbor.dumps(auth_data))
 
 @require_http_methods(['POST'])
-def finish_key(request):
-	
+def finish_key(request):	
 	data = cbor.loads(request.body)[0]
 	credential_id = data['credentialId']
 	client_data = ClientData(data['clientDataJSON'])
