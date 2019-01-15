@@ -56,7 +56,7 @@
 							"clientDataJSON": new Uint8Array(assertion.response.clientDataJSON),
 							"signature": new Uint8Array(assertion.response.signature)
 						}),
-						username
+						
 				})
 				}).then(function(response) {
 					var stat = response.ok ? 'successful' : 'unsuccessful';

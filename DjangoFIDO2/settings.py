@@ -40,7 +40,6 @@ INSTALLED_APPS = [
     'sslserver',
     'fido2',
     'corsheaders',
-    'apps.login',
     'apps.accounts',
 ]
 
