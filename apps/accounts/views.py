@@ -1,8 +1,13 @@
+import json
+
 from django.shortcuts import render, redirect, HttpResponse
 from django.views.decorators.http import require_http_methods
 from django.http import Http404
-from .models import Authenticator, AttestedCredentialData
+
+from .models import Authenticator, AttestedCredentialData, CustomUser
 from .forms import CustomUserCreationForm
+
+
 from fido2.client import ClientData
 from fido2.server import U2FFido2Server, RelyingParty
 from fido2.ctap2 import AttestationObject, AuthenticatorData
@@ -12,8 +17,6 @@ from fido2 import cbor
 
 rp = RelyingParty('localhost', 'Demo FIDO2 server')
 server = U2FFido2Server('https://localhost:9000', rp)
-
-credentials = [] #For now store the credentials in memory
 
 
 def user_create(request, template_name='accounts/signup.html'):
@@ -27,6 +30,7 @@ def user_create(request, template_name='accounts/signup.html'):
 #These four views are for registering and verifying authenticators
 @require_http_methods(['POST'])
 def start_registration(request):
+	#TODO: Need to check if authenticator exists already within db
 	#Creates a challenge with user_id and email and returns as CBOR data
 	registration_data, state = server.register_begin({
 		'id': bytes(request.user.id),
@@ -60,16 +64,16 @@ def end_registration(request):
 	)
 
 
-	credentials.append(auth_data.credential_data) #For now for testing purposes
 	del request.session['state'] #Pop the session data
 	return HttpResponse(cbor.dumps({'status': 'OK'}))
 
 @require_http_methods(['POST'])
 def start_authentication(request):	
-	credentials = Authenticator.objects.get_credentials(login_id=request.user.id)
-
-	print('\n The credentials are \n\n\n',credentials)
-
+	body_unicode = request.body.decode('utf-8')
+	data = json.loads(body_unicode)
+	
+	#Lookup current keys
+	credentials = Authenticator.objects.get_credentials(user=data['username'])
 	auth_data, state = server.authenticate_begin(credentials)
 	request.session['state'] = state
 	return HttpResponse(cbor.dumps(auth_data))
@@ -82,7 +86,9 @@ def finish_key(request):
 	auth_data = AuthenticatorData(data['authenticatorData'])
 	signature = data['signature']
 
-	server.authenticate_complete(
+	print('The data \n\n\n ', data)
+
+	auth_finish = complete = server.authenticate_complete(
 		request.session.pop('state'),
 		credentials,
 		credential_id,
@@ -90,9 +96,18 @@ def finish_key(request):
 		auth_data,
 		signature
 	)
+
+	# if auth_finish:
+	# 	user_logging_in = request.body['username']
+	# 	password = CustomUser.objects.get_password_by_username(user=user_logging_in)
+	# 	user = authenticate(request, username=user_logging_in, password=password)
+	# 	if user is not None:
+	# 		login(request, user)
+	# 	return HttpResponse("👍")		
+
 	return HttpResponse(cbor.dumps({'status': 'OK'}))
 
-#Views for editing or deleting keys. These will likely be ajax endpoints
+#Views for editing or deleting keys. These will likely be ajax views
 def edit_authenticator(request):
 	return True
 
