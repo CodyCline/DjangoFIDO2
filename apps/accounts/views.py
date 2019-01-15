@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect, HttpResponse
 from django.views.decorators.http import require_http_methods
 from django.http import Http404
 
-from .models import Authenticator, AttestedCredentialData, CustomUser
+from .models import Authenticator, CustomUser
 from .forms import CustomUserCreationForm
 
 
@@ -35,8 +35,7 @@ def start_registration(request):
 	#TODO: Need to check if authenticator exists already within db
 	#Creates a challenge with user_id and email and returns as CBOR data
 
-	query = AttestedCredentialData.objects.filter(user=request.user).exists()
-
+	Authenticator.objects.get_credentials(user=request.user.username)
 
 	registration_data, state = server.register_begin({
 		'id': bytes(request.user.id),
@@ -59,22 +58,12 @@ def end_registration(request):
 	)
 	
 	encoded_auth = websafe_encode(auth_data.credential_data)
-
-	#Write the authenticator (meta data about the key) and the actual cryptographic data to db
 	new_key = Authenticator.objects.create_authenticator(
 		login_id=request.user.id,
 		auth_data = encoded_auth
 	)
-
-	# AttestedCredentialData.objects.add_auth_data(
-	# 	key_id=new_key,
-	# 	auth_data = auth_data.credential_data,
-	# 	user = request.user.id
-	# )
-
-	# credentials.append(auth_data.credential_data)
 	
-	del request.session['state'] #Pop the session data
+	del request.session['state'] 
 	return HttpResponse("You're all set 🎉!")
 
 @require_http_methods(['POST'])

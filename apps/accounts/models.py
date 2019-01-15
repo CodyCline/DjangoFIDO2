@@ -1,6 +1,6 @@
 import datetime
+from django.shortcuts import HttpResponse
 from django.contrib.auth.models import AbstractUser, UserManager
-from fido2.ctap2 import AttestedCredentialData as att_data
 from django.db import models
 from django.conf import settings
 from fido2 import cbor
@@ -19,37 +19,36 @@ class ModelManager(models.Manager):
 		new_authenticator.save()
 		return new_authenticator.id
 	
-	def add_auth_data(self, key_id, auth_data, user):
-		authenticator_id = Authenticator.objects.get(id = key_id)
-		user_id = CustomUser.objects.get(id = user)
-		self.create(
-			authenticator=authenticator_id,
-			user=user_id,
-			aaguid = auth_data.aaguid,
-			credential_id = auth_data.credential_id,
-			public_key = cbor.dump_dict(auth_data.public_key)		
-		)
-
 	def get_credentials(self, user):
+		#This needs to grab the credentials that belong to a user based on username
 		query_list = []
 		user_id = CustomUser.objects.get(username=user).id
 		#TODO return statement if username not found
+		if user_id.exists() is None:
+			return HttpResponse("We can't find that user")
+		#Also need to use exists() method to check if they have any keys
 		auth_query = Authenticator.objects.filter(user=user_id).all()
-
-		#Also need to use exists() method
+		if auth_query.exists():
+			for i in auth_query:
+				query_list.append(Authenticator.objects.only('encoded_data').get(user=user_id).encoded_data)
+			return query_list
+		else:
+			return HttpResponse('Not found')
+		
 		#Grab each AttestedCredentialData that belongs to an Authenticator
 		# whose user_id matches up with the logged in user' id
 		#This is where we will probably need to reconstruct the data
 		#to be in a proper format
-		for i in auth_query:
-			att_query = AttestedCredentialData.objects.get(authenticator=i)
-			query_list.append(att_query)
-
 		return query_list
 	
 	def get_password_by_username(self, username):
 		the_user = CustomUser.objects.get(username=user).password
 		return the_user
+
+	#This will update the 'last_used' property every 
+	# time a user logs in or registers a new device
+	def update_authenticator(self, key):
+		return True
 
 
 class CustomUser(AbstractUser):
@@ -66,18 +65,5 @@ class Authenticator(models.Model):
 	encoded_data = models.CharField(max_length=950)
 	last_used = models.DateTimeField(auto_now_add=True)
 	created_at = models.DateTimeField(auto_now_add=True)
-	objects = ModelManager()
-
-#The actual cryptographic data stored from the device for verification
-class AttestedCredentialData(models.Model):
-	user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="attObj", on_delete=models.CASCADE)
-	authenticator = models.OneToOneField(
-		Authenticator,
-		on_delete=models.CASCADE
-	)
-
-	aaguid = models.BinaryField()
-	credential_id = models.BinaryField()
-	public_key = models.BinaryField()
 	objects = ModelManager()
 
