@@ -27,8 +27,6 @@
 			var csrftoken = Cookies.get('csrftoken');
 			function start_auth() {
 				var username = document.getElementById("username").value;
-				console.log('firing')
-				console.log(username)
 				fetch("{% url 'start_auth' %}", {
 					method: 'POST',
 					headers: {
@@ -63,8 +61,6 @@
 					alert('Authentication ' + stat + ' More details in server log...');
 				}, function(reason) {
 					alert(reason);
-				}).then(function() {
-				window.location = '/';
 				});
 			}
 		</script>
