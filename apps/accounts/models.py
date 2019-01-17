@@ -23,31 +23,16 @@ class ModelManager(models.Manager):
 		return new_authenticator.id
 	
 	def get_credentials(self, user):
-		#This function does validation and if it passes all the checks 
-		#it then returns a list of all of the user's authenticator data
+		#Function finds all authenticator's registered to user and returns 
+		# it as a list 
 		query_list = []
 		username = CustomUser.objects.get(username=user).id
-		# print('This is the user id \n', user_id, '\n type \n', type(user_id))
-		#Check if the user they inputted exists
-		# if CustomUser.objects.filter(id=user_id).exists():
-			# return HttpResponse("We can't find that user")
-		#Goes to db and grabs the value of the data stored from device 
-		# and then returns a list of said data
 		auth_query = Authenticator.objects.filter(user=username).all()
-		# if auth_query.exists():
 		for cred in auth_query.iterator():
 			query = cred.encoded_data
 			decode = AttestedCredentialData(websafe_decode(query))
 			query_list.append(decode)
 		return query_list
-		# else:
-			# print('Not found')
-			# return HttpResponse("We can't find any devices registered to this user")
-		
-	
-	def get_password_by_username(self, username):
-		the_user = CustomUser.objects.get(username=username).password
-		return the_user
 
 	#This will update the 'last_used' property every 
 	# time a user logs in or registers a new device

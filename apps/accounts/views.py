@@ -4,6 +4,7 @@ from django.shortcuts import render, redirect, HttpResponse
 from django.contrib.auth import authenticate, login
 from django.views.decorators.http import require_http_methods
 from django.http import Http404
+from django.contrib.auth.hashers import check_password
 
 from .models import Authenticator, CustomUser
 from .forms import CustomUserCreationForm
@@ -17,7 +18,6 @@ from fido2.ctap1 import RegistrationData
 from fido2.utils import sha256, websafe_encode, websafe_decode
 from fido2 import cbor
 
-# rp_host = urlparse(request.build_absolute_uri()).hostname
 rp = RelyingParty('localhost', 'Demo server')
 server = Fido2Server(rp)
 
@@ -33,9 +33,7 @@ def user_create(request, template_name='accounts/signup.html'):
 #These four views are for registering and verifying authenticators
 @require_http_methods(['POST'])
 def start_registration(request):
-	#TODO: Need to check if authenticator exists already within db
 	#Creates a challenge with user_id and email and returns as CBOR data
-	print(request.user.username)
 	credentials = Authenticator.objects.get_credentials(user=request.user.username)
 
 	registration_data, state = server.register_begin({
@@ -100,16 +98,13 @@ def finish_key(request):
 		client_data,
 		auth_data,
 		signature
-	)
-	
+	)	
+
 	user_logging_in = request.session['username'] # This needs to be session data
 	password = CustomUser.methods.get_password_by_username(username=user_logging_in)
-	user = authenticate(request, user=user_logging_in, password=password)
-	if user is not None:
-		login(request, user)
-	return redirect('/')	
-
-	# return HttpResponse(cbor.dumps({'status': 'OK'}))
+	user = CustomUser.objects.get(username=user_logging_in)	
+	login(request, user)
+	return HttpResponse('This checks out 👍')
 
 #Views for editing or deleting keys. These will likely be ajax views
 def edit_authenticator(request):
