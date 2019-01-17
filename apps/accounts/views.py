@@ -101,7 +101,6 @@ def finish_key(request):
 	)	
 
 	user_logging_in = request.session['username'] # This needs to be session data
-	password = CustomUser.methods.get_password_by_username(username=user_logging_in)
 	user = CustomUser.objects.get(username=user_logging_in)	
 	login(request, user)
 	return HttpResponse('This checks out 👍')

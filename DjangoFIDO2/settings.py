@@ -38,8 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'sslserver',
-    'fido2',
     'corsheaders',
+    'compressor_toolkit',
     'apps.accounts',
 ]
 
@@ -130,6 +130,11 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
     '/var/www/static/',
 ]
+
+COMPRESS_PRECOMPILERS = (
+    ('text/x-scss', 'compressor_toolkit.precompilers.SCSSCompiler'),
+    ('module', 'compressor_toolkit.precompilers.ES6Compiler'),
+)
 
 AUTH_USER_MODEL = 'accounts.CustomUser' 
 LOGIN_REDIRECT_URL = '/'
