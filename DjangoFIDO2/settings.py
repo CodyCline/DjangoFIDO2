@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'sslserver',
     'corsheaders',
-    'compressor_toolkit',
     'apps.accounts',
 ]
 
@@ -61,7 +60,7 @@ ROOT_URLCONF = 'DjangoFIDO2.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [(os.path.join(BASE_DIR, 'core_template')),],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -131,10 +130,6 @@ STATICFILES_DIRS = [
     '/var/www/static/',
 ]
 
-COMPRESS_PRECOMPILERS = (
-    ('text/x-scss', 'compressor_toolkit.precompilers.SCSSCompiler'),
-    ('module', 'compressor_toolkit.precompilers.ES6Compiler'),
-)
 
 AUTH_USER_MODEL = 'accounts.CustomUser' 
 LOGIN_REDIRECT_URL = '/'

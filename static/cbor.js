@@ -1,3 +1,5 @@
+//will deprecate for the npm dependency version
+
 /*
  * The MIT License (MIT)
  *
