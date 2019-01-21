@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'sslserver',
     'corsheaders',
+    'webpack_loader',
     'apps.accounts',
 ]
 
@@ -72,6 +73,13 @@ TEMPLATES = [
         },
     },
 ]
+
+WEBPACK_LOADER = {
+    'DEFAULT': {
+        'BUNDLE_DIR_NAME': 'dist/',
+        'STATS_FILE': os.path.join(BASE_DIR, 'webpack-stats.json'),
+    }
+}
 
 WSGI_APPLICATION = 'DjangoFIDO2.wsgi.application'
 
@@ -125,10 +133,9 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "static"),
-    '/var/www/static/',
-]
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'static'),
+)
 
 
 AUTH_USER_MODEL = 'accounts.CustomUser' 
