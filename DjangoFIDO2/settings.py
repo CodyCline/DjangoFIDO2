@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'sslserver',
+    'widget_tweaks',
     'corsheaders',
     'webpack_loader',
     'apps.accounts',
@@ -139,5 +140,5 @@ STATICFILES_DIRS = (
 
 
 AUTH_USER_MODEL = 'accounts.CustomUser' 
-LOGIN_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = '/accounts/dashboard'
 LOGOUT_REDIRECT_URL = '/'

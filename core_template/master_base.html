@@ -8,17 +8,54 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Django FIDO2</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500" rel="stylesheet">
     <link rel="stylesheet" href={% webpack_static 'dist/main.css' %}>
 </head>
 <body>
     {% render_bundle 'main' 'js' %}
-    <!-- This is where core UI components go -->
-    <header class="mdc-top-app-bar">
+    <header class="bar-config mdc-top-app-bar--fixed">
         <div class="mdc-top-app-bar__row">
             <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
-            <span class="mdc-top-app-bar__title">FIDO2 Demo</span>
+                <span class="mdc-top-app-bar__title">FIDO2 Demo</span>
             </section>
+            <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-end" role="toolbar">
+                {% if user.is_authenticated %}
+                    {% comment %} <span class="mdc-typography">Welcome, {{ user.username }} </span> {% endcomment %}
+                    {% comment %} <span onclick="" class="menu-toggle material-icons mdc-top-app-bar__action-item" aria-label="Bookmark this page">account_circle</span> {% endcomment %}
+                    <div id="demo-menu" class="mdc-menu-surface--anchor">
+                    <span class="mdc-typography">Welcome, {{ user.username }} </span>
+                    <div class="mdc-menu-surface--anchor">
+                        <div class="mdc-menu mdc-menu-surface mdc-menu-surface--open">
+                            <ul class="mdc-list" role="menu" aria-hidden="true">
+                                <li class="mdc-list-item " >Item 1</li>
+                            </ul>
+                            <ul class="mdc-list" role="menu" aria-hidden="true">
+                                <li class="mdc-list-item " >Item 1</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <span onclick="" class="menu-toggle material-icons mdc-top-app-bar__action-item" aria-label="Bookmark this page">account_circle</span>
+                {% else %}
+                    <span class="mdc-typography" aria-label="Bookmark this page">Account?</span>
+                    <span class="menu-toggle material-icons mdc-top-app-bar__action-item" aria-label="Bookmark this page">account_circle</span>
+                {% endif %}
+                
+            </section>
+            
         </div>
     </header>
+    {% comment %} <div id="demo-menu" class="mdc-menu-surface--anchor">
+    <button id="menu-button" class="mdc-button">Open Menu</button>
+    <div class="mdc-menu-surface--anchor">
+        <div class="mdc-menu mdc-menu-surface mdc-menu-surface--open">
+            <ul class="mdc-list" role="menu" aria-hidden="true">
+                <li class="mdc-list-item " >Item 1</li>
+            </ul>
+            <ul class="mdc-list" role="menu" aria-hidden="true">
+                <li class="mdc-list-item " >Item 1</li>
+            </ul>
+        </div>
+    </div> {% endcomment %}
+    {% block content %}{% endblock %}
 </body>
 </html>

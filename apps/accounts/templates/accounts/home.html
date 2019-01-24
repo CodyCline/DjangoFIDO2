@@ -1,18 +1,11 @@
 <!-- templates/home.html -->
-{% extends 'accounts/base.html' %}
+{% extends 'master_base.html' %}
 
 {% block title %}Home{% endblock %}
 
-{% comment %} {% block content %} {% endcomment %}
-{% if user.is_authenticated %}
-  Hi {{ user.username }}!
-
-  <p>{{ user.id }}</p>
-  <p><a href="{% url 'logout' %}">logout</a></p>
-{% else %}
-  <p>You are not logged in</p>
+{% block content %}
+  <p>Welcome</p>
   <a href="{% url 'login' %}">login</a> |
   <a href="{% url 'signup' %}">signup</a>|
   <a href="{% url 'auth' %}">key_login</a>
-{% endif %}
-{% comment %} {% endblock %} {% endcomment %}
+{% endblock %}

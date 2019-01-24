@@ -7,6 +7,7 @@ class CustomUserCreationForm(UserCreationForm):
     class Meta(UserCreationForm):
         model = CustomUser
         fields = ('username', 'email')
+        widget = forms.TextInput(attrs={'class': "mdc-floating-label"})
 
 #For changing things like username, password reset.
 class CustomUserChangeForm(UserChangeForm):

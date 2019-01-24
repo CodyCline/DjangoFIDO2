@@ -2,10 +2,10 @@
 {% load widget_tweaks %}
 
 
-{% block title %}Login{% endblock %}
+{% block title %}Sign Up{% endblock %}
 
 {% block content %}
-<h2>Login</h2>
+<h2>Add person</h2>
 <form method="post">
 	{% csrf_token %}
 
@@ -26,11 +26,18 @@
 
 	<div class="form-group">
 		<button type="submit" class="mdc-button">
-  			<span class="mdc-button__label">Login</span>
+  			<span class="mdc-button__label">Submit</span>
 		</button>
 		<button class="mdc-button" onclick="window.location='{% url 'home' %}' ">
 			<span class="mdc-button__label">Go back</span>
 		</button>
 	</div>
 </form>
+
+<div class="mdc-text-field">
+  <input type="text" id="my-text-field" class="mdc-text-field__input">
+  <label class="mdc-floating-label" for="my-text-field">Hint text</label>
+  <div class="mdc-line-ripple"></div>
+</div>
+
 {% endblock %}

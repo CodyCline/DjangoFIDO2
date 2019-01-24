@@ -1,9 +1,35 @@
 @import "@material/button/mdc-button";
 @import "@material/top-app-bar/mdc-top-app-bar";
+@import "@material/textfield/mdc-text-field";
+@import "@material/card/mdc-card";
+@import "@material/layout-grid/mdc-layout-grid";
+@import "@material/typography/mdc-typography";
+@import "@material/chips/mdc-chips";
+@import "@material/icon-button/mdc-icon-button";
+@import "@material/list/mdc-list";
+@import "@material/menu-surface/mdc-menu-surface";
+@import "@material/menu/mdc-menu";
 
 $primary: #ffd600;
 $text-color: #212121;
 
+
 body {
+  margin: auto;
+}
+
+.bar-config {
+  @include mdc-top-app-bar-fill-color($primary);
+}
+
+// .card-config {
+//   width: 12em;
+//   height: 12em;
+// }
+
+.key-card__media {
+  background-image: url('https://cdn2.iconfinder.com/data/icons/circle-icons-1/64/key-512.png');
+  height: 5em;
+  width: 5em;
   margin: auto;
 }

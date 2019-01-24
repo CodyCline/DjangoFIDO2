@@ -5,10 +5,10 @@ from django.contrib.auth import authenticate, login
 from django.views.decorators.http import require_http_methods
 from django.http import Http404
 from django.contrib.auth.hashers import check_password
+from django.contrib.auth.decorators import login_required
 
 from .models import Authenticator, CustomUser
 from .forms import CustomUserCreationForm
-
 
 from fido2.client import ClientData
 from fido2.server import U2FFido2Server, RelyingParty, Fido2Server
@@ -22,12 +22,20 @@ rp = RelyingParty('localhost', 'Demo server')
 server = Fido2Server(rp)
 
 
-def user_create(request, template_name='accounts/signup.html'):
+def user_create(request, template_name='registration/signup.html'):
 	form = CustomUserCreationForm(request.POST)
 	if form.is_valid():
 		form.save()
 		return redirect('/')
 	return render(request, template_name, {'form':form})
+
+@login_required
+def dashboard(request):
+	user_id = CustomUser.objects.get(id=request.user.id)
+	db_context = {
+		'all_keys': Authenticator.objects.filter(user=user_id).all
+	}
+	return render(request, 'accounts/dashboard.html', db_context)
 
 
 #These four views are for registering and verifying authenticators
