@@ -1,0 +1,19 @@
+body {
+    margin: auto;
+}
+
+
+.bar-config {
+	background-color: #00e676;
+}
+
+.card-content {
+	padding: 0px 16px 0px 16px;
+}
+
+.key-card__media {
+	background-image: url('https://www.xmple.com/wallpaper/blue-linear-gradient-purple-1920x1080-c2-8a2be2-00ced1-a-90-f-14.svg');
+	height: 5em;
+	width: 5em;
+	margin: auto;
+}

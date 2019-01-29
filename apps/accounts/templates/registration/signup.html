@@ -17,7 +17,7 @@
 	<div class="mdc-text-field">
 		{{ field|add_class:"mdc-text-field__input" }}
 		<label class="mdc-floating-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-		{% comment %} <div class="mdc-line-ripple"></div> {% endcomment %}
+		<div class="mdc-line-ripple"></div>
 		{% comment %} {% for error in field.errors %}
 			<span class="help-block">{{ error }}</span>
 		{% endfor %} {% endcomment %}

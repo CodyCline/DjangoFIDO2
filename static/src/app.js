@@ -1,20 +1,22 @@
 import registerKey from './accounts/add-key';
-// import { MDCMenu } from '@material/menu';
+import { MDCMenu } from '@material/menu/index';
+// import {MDCButton} from '@material/button/index';
+import { MDCTextField } from '@material/textfield';
+import './layout.scss'
 
-// const menu = new MDCMenu(document.querySelector('.mdc-list'));
+const textFields = document.querySelectorAll('.mdc-text-field');
+console.log(textFields)
 
-const menu = document.getElementsByClassName('.menu-toggle');
-
-console.log(menu)
-
-const menuToggleOpen = () => {
-    menu.open = true;
+for (const text of textFields) {
+  MDCTextField.attachTo(text);
 }
 
-const menuToggleClose = () => {
-    menu.open = false;
-}
+// mdc.textFields.MDCTextField.attachTo(document.querySelector('.mdc-text-field'));
 
-window.menuToggleClose = menuToggleClose;
-window.menuToggleOpen = menuToggleOpen;
+const buttons = document.querySelectorAll('.mdc-button');
+
+const menu = document.querySelector('.mdc-list');
+
+
+
 window.registerKey = registerKey;

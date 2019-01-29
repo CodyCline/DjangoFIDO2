@@ -1,7 +1,5 @@
 {% extends 'master_base.html' %}
 {% load widget_tweaks %}
-
-
 {% block title %}Login{% endblock %}
 
 {% block content %}
@@ -9,28 +7,37 @@
 <form method="post">
 	{% csrf_token %}
 
-	{% for hidden in form.hidden_fields %}
+	{% comment %} {% for hidden in form.hidden_fields %}
 		{{ hidden }}
-	{% endfor %}
+	{% endfor %} {% endcomment %}
 
 	{% for field in form.visible_fields %}
 	<div class="mdc-text-field">
 		{{ field|add_class:"mdc-text-field__input" }}
 		<label class="mdc-floating-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-		{% comment %} <div class="mdc-line-ripple"></div> {% endcomment %}
-		{% comment %} {% for error in field.errors %}
+		<div class="mdc-line-ripple"></div>
+		{% for error in field.errors %}
 			<span class="help-block">{{ error }}</span>
-		{% endfor %} {% endcomment %}
+		{% endfor %}
 	</div>
-	{% endfor %}
+	
+	{% endfor %} 
 
 	<div class="form-group">
 		<button type="submit" class="mdc-button">
   			<span class="mdc-button__label">Login</span>
 		</button>
-		<button class="mdc-button" onclick="window.location='{% url 'home' %}' ">
+		<button class="mdc-button" onclick="window.location='{% url 'home' %}'">
 			<span class="mdc-button__label">Go back</span>
 		</button>
 	</div>
 </form>
+
+<script>
+	var textFields = document.querySelectorAll('.mdc-text-field__input');
+	for(var i = 0; i < textFields.length; i++) {
+		mdc.textField.MDCTextField.attachTo(textFields[i]);
+	}
+</script>
+
 {% endblock %}

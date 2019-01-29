@@ -9,27 +9,28 @@
 @import "@material/list/mdc-list";
 @import "@material/menu-surface/mdc-menu-surface";
 @import "@material/menu/mdc-menu";
+@import "@material/dialog/mdc-dialog";
+
 
 $primary: #ffd600;
 $text-color: #212121;
 
 
 body {
-  margin: auto;
+	margin: auto;
 }
 
 .bar-config {
-  @include mdc-top-app-bar-fill-color($primary);
+	@include mdc-top-app-bar-fill-color($primary);
 }
 
-// .card-config {
-//   width: 12em;
-//   height: 12em;
-// }
+.card-content {
+	padding: 0px 16px 0px 16px;
+}
 
 .key-card__media {
-  background-image: url('https://cdn2.iconfinder.com/data/icons/circle-icons-1/64/key-512.png');
-  height: 5em;
-  width: 5em;
-  margin: auto;
+	background-image: url('https://www.xmple.com/wallpaper/blue-linear-gradient-purple-1920x1080-c2-8a2be2-00ced1-a-90-f-14.svg');
+	height: 5em;
+	width: 5em;
+	margin: auto;
 }

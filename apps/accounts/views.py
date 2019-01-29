@@ -3,8 +3,6 @@ import json
 from django.shortcuts import render, redirect, HttpResponse
 from django.contrib.auth import authenticate, login
 from django.views.decorators.http import require_http_methods
-from django.http import Http404
-from django.contrib.auth.hashers import check_password
 from django.contrib.auth.decorators import login_required
 
 from .models import Authenticator, CustomUser
@@ -13,7 +11,6 @@ from .forms import CustomUserCreationForm
 from fido2.client import ClientData
 from fido2.server import U2FFido2Server, RelyingParty, Fido2Server
 from fido2.ctap2 import AttestationObject, AuthenticatorData
-from fido2.ctap2 import AttestedCredentialData as att_data
 from fido2.ctap1 import RegistrationData
 from fido2.utils import sha256, websafe_encode, websafe_decode
 from fido2 import cbor
@@ -41,9 +38,10 @@ def dashboard(request):
 #These four views are for registering and verifying authenticators
 @require_http_methods(['POST'])
 def start_registration(request):
-	#Creates a challenge with user_id and email and returns as CBOR data
+	#List of current credentials for the server to validate
 	credentials = Authenticator.objects.get_credentials(user=request.user.username)
 
+	#Creates a challenge with user_id and email and returns as CBOR data
 	registration_data, state = server.register_begin({
 		'id': bytes(request.user.id),
 		'name': request.user.email,
@@ -108,7 +106,7 @@ def finish_key(request):
 		signature
 	)	
 
-	user_logging_in = request.session['username'] # This needs to be session data
+	user_logging_in = request.session['username']
 	user = CustomUser.objects.get(username=user_logging_in)	
 	login(request, user)
 	return HttpResponse('This checks out 👍')

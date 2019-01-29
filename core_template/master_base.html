@@ -1,5 +1,4 @@
-{% load render_bundle from webpack_loader %}
-{% load webpack_static from webpack_loader %}
+{% load staticfiles %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,53 +8,65 @@
     <title>Django FIDO2</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500" rel="stylesheet">
-    <link rel="stylesheet" href={% webpack_static 'dist/main.css' %}>
+    <link rel="stylesheet" href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css">
+    <link rel="stylesheet" href="{% static 'css/master.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/js-cookie/2.2.0/js.cookie.js"></script>
 </head>
 <body>
-    {% render_bundle 'main' 'js' %}
+    <script src="https://zeptojs.com/zepto.min.js"></script>
+    <script src="{% static 'js/app.js' %}"></script>
+    
     <header class="bar-config mdc-top-app-bar--fixed">
         <div class="mdc-top-app-bar__row">
             <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
                 <span class="mdc-top-app-bar__title">FIDO2 Demo</span>
             </section>
             <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-end" role="toolbar">
-                {% if user.is_authenticated %}
-                    {% comment %} <span class="mdc-typography">Welcome, {{ user.username }} </span> {% endcomment %}
-                    {% comment %} <span onclick="" class="menu-toggle material-icons mdc-top-app-bar__action-item" aria-label="Bookmark this page">account_circle</span> {% endcomment %}
-                    <div id="demo-menu" class="mdc-menu-surface--anchor">
+                {% if user.is_authenticated %}                    
                     <span class="mdc-typography">Welcome, {{ user.username }} </span>
                     <div class="mdc-menu-surface--anchor">
-                        <div class="mdc-menu mdc-menu-surface mdc-menu-surface--open">
+                        <div class="mdc-menu-surface--anchor">
+                        <span id="menutoggle" class="material-icons mdc-top-app-bar__action-item">account_circle</span>
+                        <div id="dropdownMenu" style="left:auto; right:0; margin-right:-5px;" class="mdc-menu mdc-menu-surface">
                             <ul class="mdc-list" role="menu" aria-hidden="true">
-                                <li class="mdc-list-item " >Item 1</li>
+                                <li class="mdc-list-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
                             </ul>
                             <ul class="mdc-list" role="menu" aria-hidden="true">
-                                <li class="mdc-list-item " >Item 1</li>
+                                <li class="mdc-list-item"><a href='{% url 'logout' %}'>Logout</a></li>
                             </ul>
                         </div>
                     </div>
-                    <span onclick="" class="menu-toggle material-icons mdc-top-app-bar__action-item" aria-label="Bookmark this page">account_circle</span>
                 {% else %}
-                    <span class="mdc-typography" aria-label="Bookmark this page">Account?</span>
-                    <span class="menu-toggle material-icons mdc-top-app-bar__action-item" aria-label="Bookmark this page">account_circle</span>
+                    <span class="mdc-typography">Account?</span>
+                    <div class="mdc-menu-surface--anchor">
+                        <div class="mdc-menu-surface--anchor">
+                        <span id="menutoggle" class="material-icons mdc-top-app-bar__action-item">account_circle</span>
+                        <div id="dropdownMenu" style="left:auto; right:0; margin-right:-5px;" class="mdc-menu mdc-menu-surface">
+                            <ul class="mdc-list" role="menu" aria-hidden="true">
+                                <li class="mdc-list-item"><a href="{% url 'login' %}">Sign In</a></li>
+                            </ul>
+                            <ul class="mdc-list" role="menu" aria-hidden="true">
+                                <li class="mdc-list-item"><a href='{% url 'signup' %}'>Register</a></li>
+                            </ul>
+                        </div>
+                    </div>
                 {% endif %}
-                
-            </section>
-            
+            </section>            
         </div>
+        
     </header>
-    {% comment %} <div id="demo-menu" class="mdc-menu-surface--anchor">
-    <button id="menu-button" class="mdc-button">Open Menu</button>
-    <div class="mdc-menu-surface--anchor">
-        <div class="mdc-menu mdc-menu-surface mdc-menu-surface--open">
-            <ul class="mdc-list" role="menu" aria-hidden="true">
-                <li class="mdc-list-item " >Item 1</li>
-            </ul>
-            <ul class="mdc-list" role="menu" aria-hidden="true">
-                <li class="mdc-list-item " >Item 1</li>
-            </ul>
-        </div>
-    </div> {% endcomment %}
+    
+    
     {% block content %}{% endblock %}
+    <script>
+        var menu = document.querySelector('.mdc-menu');
+        $("#menutoggle").click(function(){
+            $('#dropdownMenu').toggleClass("mdc-menu-surface--open");
+
+            //$('html').one('mousedown', function(){
+            //    $('#dropdownMenu').toggleClass("mdc-menu-surface--open");
+            //});
+        });
+    </script>
 </body>
 </html>
